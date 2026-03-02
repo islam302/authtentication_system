@@ -16,21 +16,16 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# ALLOWED_HOSTS = [
-#                     '76.13.129.20',
-#                     '127.0.0.1',
-#                     'localhost',
-#                     "una-ai-tools-apis.una-oic.org",
+ALLOWED_HOSTS = [
+                    '127.0.0.1',
+                    'localhost',
+                    "authentication-system-4svs.onrender.com",
 
-# ]
-
-ALLOWED_HOSTS = ["*"]
-
+]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:8000",
-    "http://76.13.129.20",
-    "https://una-ai-tools-apis.una-oic.org",
+    "https://authentication-system-4svs.onrender.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
