@@ -20,7 +20,7 @@ ALLOWED_HOSTS = [
                     '76.13.129.20',
                     '127.0.0.1',
                     'localhost',
-                    'una-ai-tools-apis.una-oic.org',
+                    "una-ai-tools-apis.una-oic.org",
 
 ]
 CORS_ALLOWED_ORIGINS = [
