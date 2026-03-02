@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"d:\\\\CODING\\\\UNA_Ai_Tools\\\\authentication_system\\\\authentication_system\\\\urls.py\":*)"
+    ]
+  }
+}
