@@ -16,13 +16,16 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = [
-                    '76.13.129.20',
-                    '127.0.0.1',
-                    'localhost',
-                    "una-ai-tools-apis.una-oic.org",
+# ALLOWED_HOSTS = [
+#                     '76.13.129.20',
+#                     '127.0.0.1',
+#                     'localhost',
+#                     "una-ai-tools-apis.una-oic.org",
 
-]
+# ]
+
+ALLOWED_HOSTS = ["*"]
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:8000",
