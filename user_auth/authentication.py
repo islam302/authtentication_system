@@ -1,6 +1,6 @@
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-from .models import CustomUser
+from .models import APIKey
 
 
 class APIKeyAuthentication(BaseAuthentication):
@@ -16,14 +16,16 @@ class APIKeyAuthentication(BaseAuthentication):
         api_key = request.headers.get(self.keyword)
 
         if not api_key:
-            return None  # No API key provided, try other auth methods
+            return None
 
         try:
-            user = CustomUser.objects.get(api_key=api_key, is_active=True)
-        except CustomUser.DoesNotExist:
+            key_obj = APIKey.objects.select_related('user').get(
+                key=api_key, is_active=True, user__is_active=True
+            )
+        except APIKey.DoesNotExist:
             raise AuthenticationFailed('Invalid API key')
 
-        return (user, None)
+        return (key_obj.user, key_obj)
 
     def authenticate_header(self, request):
         return self.keyword

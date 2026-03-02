@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
-from .models import CustomUser
+from .models import CustomUser, APIKey
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 
 
@@ -47,14 +47,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             organization=validated_data.get('organization', ''),
         )
-        user.generate_api_key()
+        APIKey.create_for_user(user)
         return user
 
 
-class APIKeySerializer(serializers.Serializer):
-    """Serializer for API key response."""
-    api_key = serializers.CharField(read_only=True)
-    created_at = serializers.DateTimeField(source='api_key_created_at', read_only=True)
+class APIKeySerializer(serializers.ModelSerializer):
+    """Serializer for API key."""
+
+    class Meta:
+        model = APIKey
+        fields = ['id', 'name', 'key', 'is_active', 'created_at']
+        read_only_fields = ['id', 'key', 'is_active', 'created_at']
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -71,7 +74,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'date_joined', 'has_api_key', 'instructions_count']
 
     def get_has_api_key(self, obj):
-        return bool(obj.api_key)
+        return obj.api_keys.filter(is_active=True).exists()
 
     def get_instructions_count(self, obj):
         qs = getattr(obj, 'instructions', None)

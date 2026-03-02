@@ -10,15 +10,16 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 
-from .models import CustomUser
+from .models import CustomUser, APIKey
 from .serializers import (
     UserSerializer,
     CustomTokenObtainPairSerializer,
     CustomTokenRefreshSerializer,
     UserRegistrationSerializer,
     UserProfileSerializer,
+    APIKeySerializer,
 )
-from .permissions import IsSuperUser
+from .permissions import IsAdmin
 from .utils import send_reset_password_email
 
 
@@ -45,6 +46,7 @@ class RegisterView(APIView):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            first_key = user.api_keys.first()
             return Response({
                 'message': 'تم إنشاء الحساب بنجاح',
                 'user': {
@@ -53,7 +55,7 @@ class RegisterView(APIView):
                     'email': user.email,
                     'organization': user.organization,
                 },
-                'api_key': user.api_key,
+                'api_key': APIKeySerializer(first_key).data,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -108,37 +110,38 @@ class UserProfileView(APIView):
 # API KEY MANAGEMENT VIEWS
 # =============================================================================
 
-class APIKeyView(APIView):
-    """Get, generate, or revoke API key."""
-    permission_classes = [IsAuthenticated]
+class APIKeyListCreateView(APIView):
+    """List all API keys or create a new one."""
+    permission_classes = [IsAdmin]
 
     def get(self, request):
-        if request.user.api_key:
-            return Response({
-                'api_key': request.user.api_key,
-                'created_at': request.user.api_key_created_at,
-            })
-        return Response({
-            'api_key': None,
-            'message': 'لا يوجد مفتاح API. استخدم POST لإنشاء مفتاح جديد.'
-        })
+        keys = request.user.api_keys.all()
+        serializer = APIKeySerializer(keys, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
-        api_key = request.user.generate_api_key()
+        name = request.data.get('name', 'Default')
+        key = APIKey.create_for_user(request.user, name=name)
         return Response({
-            'api_key': api_key,
-            'created_at': request.user.api_key_created_at,
             'message': 'تم إنشاء مفتاح API جديد بنجاح',
+            **APIKeySerializer(key).data,
         }, status=status.HTTP_201_CREATED)
 
-    def delete(self, request):
-        if not request.user.api_key:
+
+class APIKeyDetailView(APIView):
+    """Revoke a specific API key by ID. Admin only."""
+    permission_classes = [IsAdmin]
+
+    def delete(self, request, key_id):
+        try:
+            key = request.user.api_keys.get(id=key_id)
+        except APIKey.DoesNotExist:
             return Response(
-                {'message': 'لا يوجد مفتاح API لإلغائه'},
-                status=status.HTTP_400_BAD_REQUEST
+                {'error': 'مفتاح API غير موجود'},
+                status=status.HTTP_404_NOT_FOUND,
             )
-        request.user.revoke_api_key()
-        return Response({'message': 'تم إلغاء مفتاح API بنجاح'})
+        key.delete()
+        return Response({'message': 'تم حذف مفتاح API بنجاح'})
 
 
 # =============================================================================
@@ -148,7 +151,7 @@ class APIKeyView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsSuperUser]
+    permission_classes = [IsAdmin]
 
     def get_queryset(self):
         return CustomUser.objects.filter(role="user")

@@ -7,7 +7,8 @@ from .views import (
     RegisterView,
     LogoutView,
     UserProfileView,
-    APIKeyView,
+    APIKeyListCreateView,
+    APIKeyDetailView,
     UserViewSet,
     PasswordResetRequestView,
     PasswordResetConfirmAPIView,
@@ -31,7 +32,8 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view(), name='user_profile'),
 
     # API Key management
-    path('api-key/', APIKeyView.as_view(), name='api_key'),
+    path('api-keys/', APIKeyListCreateView.as_view(), name='api_key_list'),
+    path('api-keys/<uuid:key_id>/', APIKeyDetailView.as_view(), name='api_key_detail'),
 
     # Password reset
     path('password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),

@@ -14,27 +14,33 @@ class CustomUser(AbstractUser):
     )
     role = models.CharField(max_length=20, choices=ROLES, default='user')
 
-    # API Key for external API access
-    api_key = models.CharField(max_length=64, unique=True, blank=True, null=True)
-    api_key_created_at = models.DateTimeField(null=True, blank=True)
-
-    def generate_api_key(self):
-        """Generate a new API key for the user."""
-        from django.utils import timezone
-        self.api_key = f"nra_{secrets.token_hex(28)}"
-        self.api_key_created_at = timezone.now()
-        self.save(update_fields=['api_key', 'api_key_created_at'])
-        return self.api_key
-
-    def revoke_api_key(self):
-        """Revoke the current API key."""
-        self.api_key = None
-        self.api_key_created_at = None
-        self.save(update_fields=['api_key', 'api_key_created_at'])
-
     @property
     def is_admin_dynamic(self):
         return self.role == "admin"
 
     def __str__(self):
         return self.username
+
+
+class APIKey(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='api_keys')
+    name = models.CharField(max_length=100, default='Default')
+    key = models.CharField(max_length=64, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} — {self.user.username}"
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = f"nra_{secrets.token_hex(28)}"
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def create_for_user(cls, user, name='Default'):
+        return cls.objects.create(user=user, name=name)
