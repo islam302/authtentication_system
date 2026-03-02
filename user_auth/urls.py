@@ -21,7 +21,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
 
     # Token authentication
-    path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
 
     # Logout (blacklists refresh token)
