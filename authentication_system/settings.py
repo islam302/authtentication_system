@@ -17,10 +17,19 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
-    h.strip()
-    for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-    if h.strip()
+                    '76.13.129.20',
+                    '127.0.0.1',
+                    'localhost',
+                    'una-ai-tools-apis.una-oic.org',
+
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:8000",
+    "http://76.13.129.20",
+    "https://una-ai-tools-apis.una-oic.org",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # ─── Application definition ───────────────────────────────────────────────────
 
@@ -136,15 +145,7 @@ SIMPLE_JWT = {
 }
 
 # ─── CORS ─────────────────────────────────────────────────────────────────────
-
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOWED_ORIGINS = [
-        o.strip()
-        for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
-        if o.strip()
-    ]
+DEBUG=False
 
 CORS_ALLOW_CREDENTIALS = True
 
