@@ -154,7 +154,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdmin]
 
     def get_queryset(self):
-        return CustomUser.objects.filter(role="user")
+        return CustomUser.objects.all()
 
 
 # =============================================================================
