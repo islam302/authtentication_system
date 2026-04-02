@@ -19,7 +19,8 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
                     '127.0.0.1',
                     'localhost',
-                    "authentication-system-4svs.onrender.com",
+                    'authentication-system-4svs.onrender.com',
+                    'una-ai-tools-apis.una-oic.org',
 
 ]
 CORS_ALLOWED_ORIGINS = [
